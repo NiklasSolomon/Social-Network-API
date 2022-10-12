@@ -69,6 +69,27 @@ const userController = {
             })
             .catch(err => res.status(400).json(err));
     },
+    addFriend({ params }, res) {
+        User.findOneAndUpdate(
+            { _id: params.id },
+            { $push: { friends: params.friendId }},
+            { new: true, runValidators: true }
+        )
+        .populate({
+            path: 'friends',
+            select: ('-__v')
+        })
+        .select('-__v')
+        .then(userData => {
+            if (!userData) {
+                res.status(404).json({ message: 'Invalid ID' });
+                return;
+            }
+            res.json(userData);
+            })
+            .catch(err => res.json(err));
+        
+    },
 };
 
 module.exports = userController;
