@@ -47,6 +47,17 @@ const userController = {
             .then(userData => res.json(userData))
             .catch(err => res.status(400).json(err));
     },
+    updateUser({ params, body }, res) {
+        User.findOneAndUpdate({ _id: params.id}, body, { new: true, runValidators: true })
+            .then(userData => {
+                if(!userData) {
+                    res.status(404).json({ message: 'Invalid ID'});
+                    return;
+                }
+                res.json(userData);
+            })
+            .catch(err => res.status(400).json(err));
+    }
 };
 
 module.exports = userController;
