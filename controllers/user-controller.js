@@ -19,6 +19,29 @@ const userController = {
                 res.status(500).json(err);
             });
     },
+    getUserById({ params }, res) {
+        User.findOne({ _id: params.id })
+            .populate({
+                path: 'thoughts',
+                select: '-__v'
+            })
+            .populate({
+                path: 'friends',
+                select: '-__v'
+            })
+            select('-__v')
+            .then(userData => {
+                if(!userData) {
+                    res.status(404).json({ message: 'Invalid ID'});
+                    return;
+                }
+                res.json(userData)
+            })
+            .catch(err => {
+                console.log(err);
+                res.status(500).json(err);
+            });
+    }
 };
 
 module.exports = userController;
