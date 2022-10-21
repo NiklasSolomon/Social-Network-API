@@ -5,7 +5,7 @@ const { getAllThoughts, getThoughtById, createThought, updateThought, deleteThou
 router.route('/')
       .get(getAllThoughts);
 
-router.route('/:id')
+router.route('/:thoughtId')
       .get(getThoughtById)
       .put(updateThought)
       .delete(deleteThought); 

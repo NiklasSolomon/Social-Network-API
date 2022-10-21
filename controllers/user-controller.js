@@ -20,7 +20,7 @@ const userController = {
             });
     },
     getUserById(req, res) {
-        User.findOne({ _id: req.params.id })
+        User.findOne({ _id: req.params.userId })
             .populate({
                 path: 'thoughts',
                 select: '-__v'
@@ -45,11 +45,12 @@ const userController = {
     createUser(req, res) {
         User.create(req.body)
             .then(userData => res.json(userData))
-            .catch(err => res.status(400).json(err));
+            .catch(err => res.status(500).json(err));
     },
     updateUser(req, res) {
         User.findOneAndUpdate(
-                { _id: req.params.id},
+                { _id: req.params.userId},
+                { $set: req.body },
                 { new: true, runValidators: true })
             .then(userData => {
                 if(!userData) {
@@ -58,10 +59,10 @@ const userController = {
                 }
                 res.json(userData);
             })
-            .catch(err => res.status(400).json(err));
+            .catch(err => res.status(500).json(err));
     },
     deleteUser(req, res) {
-        User.findOneAndDelete({ _id: req.params.id })
+        User.findOneAndDelete({ _id: req.params.userId })
             .then(userData => {
                 if(!userData) {
                     res.status(404).json({ message: 'Invalid ID' });
@@ -69,12 +70,12 @@ const userController = {
                 }
                 res.json(userData);
             })
-            .catch(err => res.status(400).json(err));
+            .catch(err => res.status(500).json(err));
     },
     addFriend(req, res) {
         User.findOneAndUpdate(
-            { _id: req.params.id },
-            { $push: { friends: req.params.friendId }},
+            { _id: req.params.userId },
+            { $addToSet: { friends: req.params.friendId }},
             { new: true, runValidators: true }
         )
         .populate({
@@ -94,7 +95,7 @@ const userController = {
     },
     deleteFriend(req, res) {
         User.findOneAndUpdate(
-            { _id: req.params.id }, 
+            { _id: req.params.userId }, 
             { $pull: { friends: req.params.friendId }},
             { new: true }
         )
@@ -110,7 +111,7 @@ const userController = {
             }
             res.json(userData);
         })
-        .catch(err => res.status(400).json(err));
+        .catch(err => res.status(500).json(err));
     }
 };
 

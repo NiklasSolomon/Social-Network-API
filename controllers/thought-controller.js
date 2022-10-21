@@ -11,7 +11,7 @@ const thoughtController = {
             }); 
     },
     getThoughtById(req, res) {
-        Thought.findOne({ _id: req.params.id })
+        Thought.findOne({ _id: req.params.thoughtId })
             .populate({
                 path: 'reactions', 
                 select: '-__v'
@@ -31,11 +31,11 @@ const thoughtController = {
     },
     createThought(req, res) {
         Thought.create(req.body)
-            .then(thoughtData => {
+            .then(( _id ) => {
                 return User.findOneAndUpdate(
-                    { _id: req.params.userId },
-                    { $push: { thoughts: thoughtData._id }},
-                    { new: true, runValidators: true }
+                    { _id: req.body.userId },
+                    { $push: { thoughts: _id }},
+                    { new: true }
                 );
             })
             .then(userData => {
@@ -43,13 +43,14 @@ const thoughtController = {
                     res.status(404).json({ message: 'Invalid ID' });
                     return;
                 }
-                res.json(thoughtData)
+                res.json(userData)
             })
-            .catch(err => res.json(err)); 
+            .catch(err => res.status(500).json(err)); 
     },
     updateThought(req, res) {
         Thought.findOneAndUpdate(
-                { _id: req.params.id},
+                { _id: req.params.thoughtId},
+                { $set: req.body },
                 { new: true, runValidators: true })
             .populate({
                 path: 'reactions',
@@ -67,7 +68,7 @@ const thoughtController = {
 
     },
     deleteThought(req, res) {
-        Thought.findOneAndDelete({ _id: req.params.id })
+        Thought.findOneAndDelete({ _id: req.params.thoughtId })
             .then(thoughtData => {
                 if (!thoughtData) {
                     res.status(404).json({ message: 'Invalid ID' });
@@ -80,7 +81,7 @@ const thoughtController = {
     addReaction(req, res) {
         Thought.findOneAndUpdate(
             { _id: req.params.thoughtId },
-            { $push: { reactions: body }}, 
+            { $addToSet: { reactions: req.body }}, 
             { new: true, runValidators: true }
         )
         .populate({
@@ -102,7 +103,7 @@ const thoughtController = {
         Thought.findOneAndUpdate(
             { _id: req.params.thoughtId }, 
             { $pull: { reactions: { reactionId: req.params.reactionId }}},
-            { new : true }
+            { new : true, runValidators: true }
         )
         .then(thoughtData => {
             if (!thoughtData) {

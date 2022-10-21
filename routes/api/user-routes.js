@@ -8,14 +8,14 @@ router
     .post(createUser);
 
 router
-    .route('/:id')
+    .route('/:userId')
     .get(getUserById)
     .put(updateUser)
     .delete(deleteUser);
 
 router
-    .route('/:id/friends/:friendId')
-    .put(addFriend)
+    .route('/:userId/friends/:friendId')
+    .post(addFriend)
     .delete(deleteFriend)
 
 module.exports = router; 
