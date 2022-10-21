@@ -19,8 +19,8 @@ const userController = {
                 res.status(500).json(err);
             });
     },
-    getUserById({ params }, res) {
-        User.findOne({ _id: params.id })
+    getUserById(req, res) {
+        User.findOne({ _id: req.params.id })
             .populate({
                 path: 'thoughts',
                 select: '-__v'
@@ -29,7 +29,7 @@ const userController = {
                 path: 'friends',
                 select: '-__v'
             })
-            select('-__v')
+            .select('-__v')
             .then(userData => {
                 if(!userData) {
                     res.status(404).json({ message: 'Invalid ID' });
@@ -42,37 +42,39 @@ const userController = {
                 res.status(500).json(err);
             });
     },
-    createUser({ body }, res) {
-        User.create(body)
+    createUser(req, res) {
+        User.create(req.body)
             .then(userData => res.json(userData))
             .catch(err => res.status(400).json(err));
     },
-    updateUser({ params, body }, res) {
-        User.findOneAndUpdate({ _id: params.id}, body, { new: true, runValidators: true })
-            .then(userData => {
-                if(!userData) {
-                    res.status(404).json({ message: 'Invalid ID' });
-                    return;
-                }
-                res.json(userData);
-            })
-            .catch(err => res.status(400).json(err));
-    },
-    deleteUser({ params }, res) {
-        User.findOneAndDelete({ _id: params.id })
-            .then(userData => {
-                if(!userData) {
-                    res.status(404).json({ message: 'Invalid ID' });
-                    return;
-                }
-                res.json(userData);
-            })
-            .catch(err => res.status(400).json(err));
-    },
-    addFriend({ params }, res) {
+    updateUser(req, res) {
         User.findOneAndUpdate(
-            { _id: params.id },
-            { $push: { friends: params.friendId }},
+                { _id: req.params.id},
+                { new: true, runValidators: true })
+            .then(userData => {
+                if(!userData) {
+                    res.status(404).json({ message: 'Invalid ID' });
+                    return;
+                }
+                res.json(userData);
+            })
+            .catch(err => res.status(400).json(err));
+    },
+    deleteUser(req, res) {
+        User.findOneAndDelete({ _id: req.params.id })
+            .then(userData => {
+                if(!userData) {
+                    res.status(404).json({ message: 'Invalid ID' });
+                    return;
+                }
+                res.json(userData);
+            })
+            .catch(err => res.status(400).json(err));
+    },
+    addFriend(req, res) {
+        User.findOneAndUpdate(
+            { _id: req.params.id },
+            { $push: { friends: req.params.friendId }},
             { new: true, runValidators: true }
         )
         .populate({
@@ -90,10 +92,10 @@ const userController = {
             .catch(err => res.json(err));
         
     },
-    deleteFriend({ params }, res) {
+    deleteFriend(req, res) {
         User.findOneAndUpdate(
-            { _id: params.id }, 
-            { $pull: { friends: params.friendId }},
+            { _id: req.params.id }, 
+            { $pull: { friends: req.params.friendId }},
             { new: true }
         )
         .populate({

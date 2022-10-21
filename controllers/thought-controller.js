@@ -10,8 +10,8 @@ const thoughtController = {
                 res.status(500).json(err); 
             }); 
     },
-    getThoughtById({ params }, res) {
-        Thought.findOne({ _id: params.id })
+    getThoughtById(req, res) {
+        Thought.findOne({ _id: req.params.id })
             .populate({
                 path: 'reactions', 
                 select: '-__v'
@@ -29,17 +29,17 @@ const thoughtController = {
                 res.status(400).json(err)
             });
     },
-    createThought({ params, body}, res) {
-        Thought.create(body)
-            .then(({ _id }) => {
+    createThought(req, res) {
+        Thought.create(req.body)
+            .then(thoughtData => {
                 return User.findOneAndUpdate(
-                    { _id: params.userId },
-                    { $push: { thoughts: _id }},
+                    { _id: req.params.userId },
+                    { $push: { thoughts: thoughtData._id }},
                     { new: true, runValidators: true }
                 );
             })
-            .then(thoughtData => {
-                if(!thoughtData) {
+            .then(userData => {
+                if(!userData) {
                     res.status(404).json({ message: 'Invalid ID' });
                     return;
                 }
@@ -47,8 +47,10 @@ const thoughtController = {
             })
             .catch(err => res.json(err)); 
     },
-    updateThought({ params, body }, res) {
-        Thought.findOneAndUpdate({ _id: params.id }, body, { new: true, runValidators: true })
+    updateThought(req, res) {
+        Thought.findOneAndUpdate(
+                { _id: req.params.id},
+                { new: true, runValidators: true })
             .populate({
                 path: 'reactions',
                 select: '-__v'
@@ -64,8 +66,8 @@ const thoughtController = {
             .catch(err => res.status(400).json(err));
 
     },
-    deleteThought({ params }, res) {
-        Thought.findOneAndDelete({ _id: params.id })
+    deleteThought(req, res) {
+        Thought.findOneAndDelete({ _id: req.params.id })
             .then(thoughtData => {
                 if (!thoughtData) {
                     res.status(404).json({ message: 'Invalid ID' });
@@ -75,9 +77,9 @@ const thoughtController = {
             })
             .catch(err => res.status(400).json(err));
     },
-    addReaction({ params, body}, res) {
+    addReaction(req, res) {
         Thought.findOneAndUpdate(
-            { _id: params.thoughtId },
+            { _id: req.params.thoughtId },
             { $push: { reactions: body }}, 
             { new: true, runValidators: true }
         )
@@ -96,10 +98,10 @@ const thoughtController = {
     .catch(err => res.status(400).json(err))
 
     },
-    deleteReaction({ params }, res) {
+    deleteReaction(req, res) {
         Thought.findOneAndUpdate(
-            { _id: params.thoughtId }, 
-            { $pull: { reactions: { reactionId: params.reactionId }}},
+            { _id: req.params.thoughtId }, 
+            { $pull: { reactions: { reactionId: req.params.reactionId }}},
             { new : true }
         )
         .then(thoughtData => {
